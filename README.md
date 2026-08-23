@@ -101,3 +101,19 @@ That's it! UptimeRobot will ping your server every 10 minutes, keeping your inst
 This repository contains the necessary files to deploy the Node.js server (`index.js` and `package.json`). 
 
 **Note: You do not need to download or manually edit these files.** By providing the link to this public repository directly in Render (Step 1), the platform will automatically fetch and run the code for you!
+
+---
+
+## 👨‍💻 Credits & Support
+
+Created and maintained by **[tountoun66](https://github.com/tountoun66)**.
+
+If you encounter any issues, have questions, or want to suggest improvements, please open an issue on the [GitHub repository Issues tab](https://github.com/tountoun66/melhome-bridge/issues).
+
+## 📄 License
+
+This project is open-source and distributed under the **MIT License**. Feel free to use, modify, and distribute it as you see fit.
+
+## ⚠️ Disclaimer
+
+This project is an independent, community-driven creation and is **not affiliated with, endorsed by, or associated with Mitsubishi Electric, MELCloud, or Google**. Use this software at your own risk. The author is not responsible for any damage, unexpected behavior, or warranty voidance that may occur to your HVAC units as a result of using this software.
