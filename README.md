@@ -6,9 +6,13 @@ If you are tired of only being able to turn your AC on/off and change the temper
 
 ## ✨ Features
 
-*   **Full Google Home Control:** Finally use Google Assistant to control fan speeds (e.g., *"Ok Google, set AC fan speed to 2"*).
-*   **Custom Android App:** A fast, lightweight alternative to the official app, offering native control over Vanes (Vertical & Horizontal direction).
-*   **Privacy-Focused & Self-Hosted:** You run your own bridge on a free Render account. Your MELCloud credentials never leave your control.
+*   **Full Google Home Voice Control:** Go far beyond the basic official integration. You can now use Google Assistant to control:
+    *   **Power:** Turn AC on or off.
+    *   **Temperature:** Set or ask for the current target temperature.
+    *   **Modes:** Switch seamlessly between *Auto*, *Heat*, *Cool*, *Dry*, and *Fan* modes.
+    *   **Fan Speed:** Adjust the ventilation power (e.g., *"Ok Google, set AC fan speed to 2"* or *"Set AC to max speed"*).
+*   **Custom Android App:** A fast, lightweight alternative to the official app, offering native manual control over your AC units, including **Vanes control** (Vertical & Horizontal airflow direction).
+*   **Privacy-Focused & Self-Hosted:** You run your own bridge on a free Render account. Your MELCloud credentials never leave your control and are never stored on our servers.
 *   **100% Free & Open-Source:** No subscriptions, no proprietary hubs required.
 
 ---
