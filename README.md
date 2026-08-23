@@ -1,77 +1,72 @@
-🏠 Melhome Bridge : Connectez vos clims Mitsubishi à Google Home
-Ce projet permet de créer un pont ("Bridge") personnel entre vos climatiseurs Mitsubishi (MELCloud) et Google Home, en contournant les limitations officielles.
+# 🏠 Melhome Bridge: Better MELCloud Home Integration for Google Home
 
-Couplé à l'application Android Melhome, ce serveur vous permet de contrôler l'allumage, la température, les modes et les vitesses de ventilation directement à la voix avec Google Assistant ou depuis l'application Google Home.
+This project provides a custom Android app and a self-hosted Node.js bridge to connect your Mitsubishi Air Conditioners (using MELCloud Home) to Google Home, overcoming the limitations of the official integration.
 
-📂 1. Préparation de votre dépôt GitHub (Fichiers requis)
-Pour que ce pont fonctionne, votre dépôt GitHub doit contenir exactement deux fichiers. Disponible ici : https://github.com/tountoun66/melhome-bridge
+If you are tired of only being able to turn your AC on/off and change the temperature, this project is for you.
 
-🚀 2. Déploiement gratuit sur Render
-Pour des raisons de sécurité, vous devez faire tourner votre propre instance de ce serveur. C'est gratuit et ça prend 2 minutes :
+## ✨ Features
+*   **Full Google Home Control:** Finally use Google Assistant to control fan speeds ("Ok Google, set AC fan speed to 2").
+*   **Custom Android App:** A fast, lightweight alternative to the official app, offering native control over Vanes (Vertical & Horizontal direction).
+*   **Privacy-Focused & Self-Hosted:** You run your own bridge on a free Render account. Your MELCloud credentials never leave your control.
+*   **100% Free & Open-Source:** No subscriptions, no proprietary hubs.
 
-Créez un compte gratuit sur Render.com.
+---
 
-Cliquez sur New puis Web Service.
+## 🛠️ How to set it up (Takes about 10-15 minutes)
 
-Connectez votre compte GitHub et sélectionnez ce dépôt (votre Melhome Bridge).
+You don't need to be a developer to set this up, just follow the steps below!
 
-Configurez le déploiement ainsi :
+### Step 1: Deploy your free Bridge on Render
+Since this is a self-hosted solution, you need a tiny server to act as a bridge between your Android app and Google Home. We use Render because it has a generous free tier.
 
-Build Command : npm install
+1.  Create a free account on [Render.com](https://render.com/).
+2.  Fork this repository to your own GitHub account: **[tountoun66/melhome-bridge](https://github.com/tountoun66/melhome-bridge)**
+3.  On Render, click **New +** and select **Web Service**.
+4.  Connect your GitHub account and select your newly forked `melhome-bridge` repository.
+5.  Use the following settings:
+    *   **Build Command:** `npm install`
+    *   **Start Command:** `node index.js` (or `npm start`)
+    *   **Instance Type:** Free
+6.  Click **Create Web Service**. Wait a few minutes for the status to turn green (*Live*).
+7.  **Copy your Render URL** (it will look like `https://your-app-name.onrender.com`). Keep this handy!
 
-Start Command : npm start
+### Step 2: Create a Google Smart Home Test Project
+Because this is a DIY integration, we will use Google's "Test Mode" to link your personal bridge to your personal Google Home account.
 
-Instance Type : Free (Gratuit)
+1.  Go to the [Google Action Console](https://console.actions.google.com/) and click **New Project**. Name it something like "Melhome".
+2.  Select **Smart Home** as the project type.
+3.  Go to the **Develop** tab, then **Actions**:
+    *   Set the **Fulfillment URL** to your Render URL followed by `/fulfillment` (e.g., `https://your-app-name.onrender.com/fulfillment`).
+4.  Go to **Account linking** under the Develop tab:
+    *   **Linking Type:** OAuth and Authorization Code
+    *   **Client ID:** `1234` (Just put dummy data, our custom bridge doesn't check this)
+    *   **Client Secret:** `1234` (Dummy data again)
+    *   **Authorization URL:** `https://your-app-name.onrender.com/oauth/auth`
+    *   **Token URL:** `https://your-app-name.onrender.com/oauth/token`
+5.  Click **Save**.
+6.  In the top right corner of the console, click the **Test** button to enable testing on your Google account.
 
-Cliquez sur Create Web Service.
+### Step 3: Configure the Android App
 
-Patientez 1 à 2 minutes jusqu'à ce que le statut passe au vert (Live). Copiez l'URL de votre serveur (ex: [https://votre-projet.onrender.com](https://votre-projet.onrender.com)).
+1.  Download and install the latest APK of the **Melhome** Android app from the [Releases section](#) (Add your APK link here!).
+2.  Open the app and tap the **Settings (⚙️)** icon.
+3.  In the **Render URL** field, paste your Render web service URL (e.g., `https://your-app-name.onrender.com`).
+4.  Tap **Save**.
+5.  Tap **Link to Google Home** (Associer à Google Home). A 4-digit pairing code will appear on your screen. Leave it open.
 
-⚙️ 3. Configuration de Google Actions (Mode Test Privé)
-Google Home exige que vous créiez un projet "Smart Home" pour lier votre serveur.
+### Step 4: Link in the Google Home App
 
-Allez sur la Google Home Developer Console et créez un nouveau projet (ex: Melhome).
+1.  Open the official **Google Home** app on your phone.
+2.  Tap **+ Add**, then **Set up device**, then **Works with Google**.
+3.  Search for your project name (it will usually have `[test]` in front of it, like `[test] Melhome`).
+4.  A login screen will pop up. Enter the **4-digit pairing code** displayed on your Melhome Android app.
+5.  Success! Your Mitsubishi AC units will now appear in your Google Home app, ready to be controlled by voice or touch.
 
-Allez dans Develop > Actions et configurez :
+---
 
-Display Name : Melhome
+## 💻 Server Files (For reference)
+This repository contains the necessary files to deploy the Node.js server. 
+*   `index.js`: The main bridge logic handling OAuth and Google Smart Home intents.
+*   `package.json`: Dependencies required to run the server on Render.
 
-Fulfillment URL : [https://votre-projet.onrender.com/fulfillment](https://votre-projet.onrender.com/fulfillment) (Remplacez par l'URL de votre Render)
-
-Allez dans Develop > Account Linking et configurez l'OAuth 2.0 :
-
-Linking Type : OAuth / Authorization Code
-
-Client ID : 1234 (Valeur fictive, le pont ne s'en sert pas)
-
-Client Secret : 1234 (Valeur fictive)
-
-Authorization URL : [https://votre-projet.onrender.com/oauth/auth](https://votre-projet.onrender.com/oauth/auth)
-
-Token URL : [https://votre-projet.onrender.com/oauth/token](https://votre-projet.onrender.com/oauth/token)
-
-Cliquez sur Save. En haut à droite de la console, cliquez sur le bouton Test pour activer le projet sur votre compte Google personnel.
-
-📱 4. Association avec l'Application Android
-Installez et ouvrez l'application Android Melhome sur votre téléphone.
-
-Cliquez sur l'icône Paramètres (⚙️).
-
-Dans le champ "URL Render", collez l'URL de votre serveur Render (ex: [https://votre-projet.onrender.com](https://votre-projet.onrender.com)) et appuyez sur Enregistrer.
-
-Appuyez sur Associer à Google Home. Un code unique à 4 chiffres va apparaître. Gardez-le sous les yeux.
-
-🗣️ 5. Lier à Google Home
-Ouvrez l'application Google Home sur votre smartphone.
-
-Allez dans l'onglet Appareils, appuyez sur + Ajouter -> Fonctionne avec Google Home.
-
-Cherchez votre service de test (il commence généralement par [test] Melhome).
-
-Une page web s'ouvre : saisissez le code à 4 chiffres donné par votre application Android.
-
-Validez ! Vos climatiseurs apparaissent instantanément.
-
-Vous pouvez maintenant dire : "Ok Google, mets la clim du salon sur 21 degrés" ou "Ok Google, règle la ventilation sur Vitesse 2".
-
-Avec ce fichier, vous leur donnez tout le nécessaire "clé en main" : les deux fichiers à créer sur leur GitHub, les commandes de build pour Render, et la méthode pour relier tout ça à votre application mobile universelle !
+*You do not need to edit these files to make it work for you!*
