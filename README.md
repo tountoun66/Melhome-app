@@ -4,26 +4,7 @@ Ce projet permet de créer un pont ("Bridge") personnel entre vos climatiseurs M
 Couplé à l'application Android Melhome, ce serveur vous permet de contrôler l'allumage, la température, les modes et les vitesses de ventilation directement à la voix avec Google Assistant ou depuis l'application Google Home.
 
 📂 1. Préparation de votre dépôt GitHub (Fichiers requis)
-Pour que ce pont fonctionne, votre dépôt GitHub doit contenir exactement deux fichiers. Vous n'avez aucune ligne de code à modifier à l'intérieur, copiez-les tels quels :
-
-Fichier 1 : package.json
-Ce fichier indique au serveur quelles dépendances installer.
-
-JSON
-{
-  "name": "melhome-bridge",
-  "version": "1.0.0",
-  "description": "Serveur pont pour lier Melhome à Google Home",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2"
-  }
-}
-Fichier 2 : index.js
-C'est le code du serveur (copiez le long code Node.js final que nous avons validé ensemble et collez-le ici).
+Pour que ce pont fonctionne, votre dépôt GitHub doit contenir exactement deux fichiers. Disponible ici : https://github.com/tountoun66/melhome-bridge
 
 🚀 2. Déploiement gratuit sur Render
 Pour des raisons de sécurité, vous devez faire tourner votre propre instance de ce serveur. C'est gratuit et ça prend 2 minutes :
