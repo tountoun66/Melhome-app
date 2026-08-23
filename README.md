@@ -63,6 +63,27 @@ Because this is a DIY integration, we will use Google's "Test Mode" to link your
 5.  Success! Your Mitsubishi AC units will now appear in your Google Home app, ready to be controlled by voice or touch.
 
 ---
+## ⚠️ Crucial Optimization: Preventing Server Sleep (Google Home Timeout)
+
+If you are hosting this bridge on **Render**'s free tier, the server will automatically go to sleep after 15 minutes of inactivity. 
+
+**The Problem (Cold Start):** If the server is asleep, it takes about 30 seconds to wake up. Google Home is impatient and will consider the command failed after 5 seconds, responding with *"An error occurred"* or *"Melhome is unavailable"* on your first attempt.
+
+**The Solution:** To ensure your voice commands are executed instantly every time, you need to use a free "ping" service to keep the server awake.
+
+### Configuration using UptimeRobot (Takes 2 minutes):
+
+1. Create a free account on [UptimeRobot.com](https://uptimerobot.com).
+2. From your dashboard, click the green **+ Add New Monitor** button.
+3. Fill out the form with the following information:
+   * **Monitor Type**: `HTTP(s)`
+   * **Friendly Name**: `Melhome Bridge Render` (or any name you prefer)
+   * **URL (or IP)**: `https://YOUR_RENDER_ADDRESS.onrender.com/oauth/auth` *(Make sure to replace this with your actual Render URL!)*
+   * **Monitoring Interval**: `10 minutes` *(It is crucial to set this under 15 minutes).*
+4. Scroll down and click the **Create Monitor** button.
+
+That's it! UptimeRobot will now discreetly "visit" your server every 10 minutes, preventing Render from putting it to sleep. Your Google Home commands will now work instantly on the first try.
+---
 
 ## 💻 Server Files (For reference)
 This repository contains the necessary files to deploy the Node.js server. 
