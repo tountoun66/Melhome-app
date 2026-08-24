@@ -1,4 +1,4 @@
-# 🏠 Melhome Bridge: Better MELCloud Home Integration for Google Home
+# 🏠 Melhome Bridge v1.1: Better MELCloud Home Integration for Google Home
 
 This project provides a custom Android app and a self-hosted Node.js bridge to connect your Mitsubishi Air Conditioners (using MELCloud Home) to Google Home, overcoming the limitations of the official integration.
 
@@ -12,7 +12,8 @@ If you are tired of only being able to turn your AC on/off and change the temper
     *   **Modes:** Switch seamlessly between *Auto*, *Heat*, *Cool*, *Dry*, and *Fan* modes.
     *   **Fan Speed:** Adjust the ventilation power (e.g., *"Ok Google, set AC fan speed to 2"* or *"Set AC to max speed"*).
 *   **Custom Android App:** A fast, lightweight alternative to the official app, offering native manual control over your AC units, including **Vanes control** (Vertical & Horizontal airflow direction).
-*   **Privacy-Focused & Self-Hosted:** You run your own bridge on a free Render account. Your MELCloud credentials never leave your control and are never stored on our servers.
+*   **[NEW in v1.1] 100% Autonomous Background Sync:** You no longer need to manually open the app to keep your session alive. Your phone does it silently in the background!
+*   **Privacy-Focused & Self-Hosted:** You run your own bridge on a free Render account. Your MELCloud credentials never leave your device (stored in a hardware-encrypted vault) and are never stored on our servers.
 *   **100% Free & Open-Source:** No subscriptions, no proprietary hubs required.
 
 ---
@@ -54,8 +55,8 @@ Because this is a DIY integration, we will use Google's "Test Mode" to link your
 
 ### Step 3: Configure the Android App
 
-1.  Download the **ZIP file** containing the Melhome Android app directly from this GitHub repository. Extract the `.zip` file, and install the included `.apk` on your phone.
-2.  Open the app and **log in to your MELCloud Home account** using your official credentials. *(Your login details remain on your phone and are never sent to our servers).*
+1.  Download the **ZIP file** containing the Melhome Android app v1.1 directly from this GitHub repository. Extract the `.zip` file, and install the included `.apk` on your phone.
+2.  Open the app and **log in to your MELCloud Home account** using your official credentials. *(Your login details are instantly hardware-encrypted via Android's EncryptedSharedPreferences and never leave your phone).*
 3.  Once logged in, tap the **Settings (⚙️)** icon.
 4.  In the **Render URL** field, paste your Render web service URL (e.g., `https://your-app-name.onrender.com`).
 5.  Tap **Save**.
@@ -71,29 +72,27 @@ Because this is a DIY integration, we will use Google's "Test Mode" to link your
 
 ---
 
-## 🧠 Architecture Choice: Why no Background Worker?
+## 🧠 Architecture Evolution: Why we added a Background Worker (v1.1)
 
-You might wonder why the Android app doesn't automatically refresh the connection in the background if your session expires. This is a deliberate design choice based on two main principles:
+In v1.0 of this project, the Android app deliberately avoided background tasks. The idea was to prevent Android's aggressive battery optimizations from killing the app, forcing users to manually open the app to refresh their session if Mitsubishi disconnected them. 
 
-1.  **Maximum Security:** To keep your data safe, your MELCloud password stays securely on your phone. The Node.js server only receives a temporary, harmless "cookie". The server cannot request a new cookie on its own.
-2.  **Android Battery Optimizations:** Modern smartphones have extremely aggressive battery-saving features that often silently kill background tasks (Background Workers). Building a background service would require users to dig into complex system settings to manually disable battery optimization for this app, which is frustrating and unreliable.
+**The Problem with v1.0:** 
+This manual approach proved frustrating. When the session expired in the background, Google Home would suddenly reply with *"Melhome is unavailable"*. Users had to open their phone just to make voice commands work again, defeating the purpose of a smart home integration.
 
-**The Simple, Bulletproof Solution:**
-If you open the official MELCloud app, Mitsubishi might invalidate your current active session for security reasons. If this happens and Google Home suddenly says it can't reach your AC, **do not unlink your account**. 
-Simply open this custom Melhome Android app for 2 seconds. It will instantly authenticate in the foreground, send a fresh cookie to your bridge, and Google Home will work again immediately!
+**The v1.1 Solution:**
+We completely redesigned the authentication flow to be 100% autonomous while maintaining maximum security:
+1.  **Military-Grade Local Security:** Your MELCloud password is never stored in plain text. It is locked inside your phone using Android's `EncryptedSharedPreferences` (AES256_GCM).
+2.  **Smart Background Worker:** The app now uses a modern Android `WorkManager`. Every 2 hours, this lightweight background task wakes up, securely decrypts your session, and silently pushes a fresh access token to your Render bridge. 
+3.  **Result:** Google Home always has a valid token. You get **24/7 uptime without ever needing to open the app manually again**, with zero impact on your phone's battery!
 
 ---
 
-## ⚠️ Crucial Optimization: Preventing Server Sleep & Data Loss
+## ⚠️ Crucial Optimization: Preventing Server Sleep
 
-If you are hosting this bridge on **Render**'s free tier, the server will automatically go to sleep after 15 minutes of inactivity.
-
-### Why this is critical:
-* **Google Home Timeouts (Cold Start):** Waking up a sleeping instance takes ~30 seconds. Google Home times out after ~5 seconds, reporting: *"An error occurred"* or *"Melhome is unavailable"* on your first command.
-* **HTTP 500 Errors & Unlinking Issues:** Because session data and pairing tokens are held in volatile memory, shutting down or restarting the instance clears this cache. If this happens, your mobile app may run into **500 Internal Server Errors**, and you will be forced to **unlink and reconnect your Google Home account** to restore functionality.
+Even though your phone now syncs perfectly in the background, if you are hosting this bridge on **Render**'s free tier, the server itself will automatically go to sleep after 15 minutes of inactivity. Waking it up takes ~30 seconds, causing Google Home to time out and report an error on your first command.
 
 ### The Solution: Keep the Server Awake
-To maintain an instant response time and avoid session resets, use a free "ping" service to keep your Render instance awake 24/7.
+To maintain an instant response time, use a free "ping" service to keep your Render instance awake 24/7.
 
 **Configuration using UptimeRobot (Takes 2 minutes):**
 
@@ -106,7 +105,7 @@ To maintain an instant response time and avoid session resets, use a free "ping"
    * **Monitoring Interval**: `10 minutes` *(Must be strictly set below 15 minutes).*
 4. Scroll down and click **Create Monitor**.
 
-That's it! UptimeRobot will ping your server every 10 minutes, keeping your instance permanently active, eliminating voice command delays, and preventing session drops.
+That's it! UptimeRobot keeps the server alive, and your phone's new background Worker keeps the session alive. Your integration is now rock solid.
 
 ---
 
