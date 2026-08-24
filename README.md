@@ -71,6 +71,19 @@ Because this is a DIY integration, we will use Google's "Test Mode" to link your
 
 ---
 
+## 🧠 Architecture Choice: Why no Background Worker?
+
+You might wonder why the Android app doesn't automatically refresh the connection in the background if your session expires. This is a deliberate design choice based on two main principles:
+
+1.  **Maximum Security:** To keep your data safe, your MELCloud password stays securely on your phone. The Node.js server only receives a temporary, harmless "cookie". The server cannot request a new cookie on its own.
+2.  **Android Battery Optimizations:** Modern smartphones have extremely aggressive battery-saving features that often silently kill background tasks (Background Workers). Building a background service would require users to dig into complex system settings to manually disable battery optimization for this app, which is frustrating and unreliable.
+
+**The Simple, Bulletproof Solution:**
+If you open the official MELCloud app, Mitsubishi might invalidate your current active session for security reasons. If this happens and Google Home suddenly says it can't reach your AC, **do not unlink your account**. 
+Simply open this custom Melhome Android app for 2 seconds. It will instantly authenticate in the foreground, send a fresh cookie to your bridge, and Google Home will work again immediately!
+
+---
+
 ## ⚠️ Crucial Optimization: Preventing Server Sleep & Data Loss
 
 If you are hosting this bridge on **Render**'s free tier, the server will automatically go to sleep after 15 minutes of inactivity.
