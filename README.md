@@ -1,4 +1,4 @@
-# 🏠 Melhome Bridge v1.1: Better MELCloud Home Integration for Google Home
+# 🏠 Melhome Bridge v1.11: Better MELCloud Home Integration for Google Home
 
 This project provides a custom Android app and a self-hosted Node.js bridge to connect your Mitsubishi Air Conditioners (using MELCloud Home) to Google Home, overcoming the limitations of the official integration.
 
@@ -12,7 +12,7 @@ If you are tired of only being able to turn your AC on/off and change the temper
     *   **Modes:** Switch seamlessly between *Auto*, *Heat*, *Cool*, *Dry*, and *Fan* modes.
     *   **Fan Speed:** Adjust the ventilation power (e.g., *"Ok Google, set AC fan speed to 2"* or *"Set AC to max speed"*).
 *   **Custom Android App:** A fast, lightweight alternative to the official app, offering native manual control over your AC units, including **Vanes control** (Vertical & Horizontal airflow direction).
-*   **[NEW in v1.1] 100% Autonomous Background Sync:** You no longer need to manually open the app to keep your session alive. Your phone does it silently in the background!
+*   **[NEW in v1.1] Smart Autonomous Background Sync & Anti-Amnesia:** You no longer need to manually open the app to keep your session alive. If Render ever restarts, it detects the empty state and triggers an instant, automatic token re-injection from your phone via `WorkManager` and app startup.
 *   **Privacy-Focused & Self-Hosted:** You run your own bridge on a free Render account. Your MELCloud credentials never leave your device (stored in a hardware-encrypted vault) and are never stored on our servers.
 *   **100% Free & Open-Source:** No subscriptions, no proprietary hubs required.
 
@@ -72,24 +72,25 @@ Because this is a DIY integration, we will use Google's "Test Mode" to link your
 
 ---
 
-## 🧠 Architecture Evolution: Why we added a Background Worker (v1.1)
+## 🧠 Architecture Evolution: The Smart Handshake Protocol (v1.1)
 
 In v1.0 of this project, the Android app deliberately avoided background tasks. The idea was to prevent Android's aggressive battery optimizations from killing the app, forcing users to manually open the app to refresh their session if Mitsubishi disconnected them. 
 
 **The Problem with v1.0:** 
-This manual approach proved frustrating. When the session expired in the background, Google Home would suddenly reply with *"Melhome is unavailable"*. Users had to open their phone just to make voice commands work again, defeating the purpose of a smart home integration.
+This manual approach proved frustrating. When the session expired or Render went to sleep and lost memory, Google Home would suddenly reply with *"Melhome is unavailable"*. Users had to open their phone just to make voice commands work again, defeating the purpose of a smart home integration.
 
-**The v1.1 Solution:**
-We completely redesigned the authentication flow to be 100% autonomous while maintaining maximum security:
+**The v1.1 Solution (Smart Bi-Directional Handshake):**
+We upgraded the backend and app to work together via an intelligent, lightweight recovery loop:
 1.  **Military-Grade Local Security:** Your MELCloud password is never stored in plain text. It is locked inside your phone using Android's `EncryptedSharedPreferences` (AES256_GCM).
-2.  **Smart Background Worker:** The app now uses a modern Android `WorkManager`. Every 2 hours, this lightweight background task wakes up, securely decrypts your session, and silently pushes a fresh access token to your Render bridge. 
-3.  **Result:** Google Home always has a valid token. You get **24/7 uptime without ever needing to open the app manually again**, with zero impact on your phone's battery!
+2.  **Server-Initiated Recovery (`PUSH_COOKIE_REQUIRED`):** If Render restarts or clears its cache, its status endpoint flags itself as empty. 
+3.  **Autonomous WorkManager & Startup Check:** Your phone’s background `WorkManager` (and the app itself upon opening) continuously monitors Render. The moment it spots that Render needs a token, it **instantly pushes a fresh session cookie back to the bridge**.
+4.  **Result:** Total bulletproof reliability. You get **24/7 uptime without ever needing to worry about server reboots or manual re-linking**, with zero battery drain!
 
 ---
 
 ## ⚠️ Crucial Optimization: Preventing Server Sleep
 
-Even though your phone now syncs perfectly in the background, if you are hosting this bridge on **Render**'s free tier, the server itself will automatically go to sleep after 15 minutes of inactivity. Waking it up takes ~30 seconds, causing Google Home to time out and report an error on your first command.
+Even though your phone can automatically heal the bridge, if you are hosting this on **Render**'s free tier, the server itself will automatically go to sleep after 15 minutes of inactivity. Waking it up takes ~30 seconds, causing Google Home to time out and report an error on your very first command.
 
 ### The Solution: Keep the Server Awake
 To maintain an instant response time, use a free "ping" service to keep your Render instance awake 24/7.
@@ -105,7 +106,7 @@ To maintain an instant response time, use a free "ping" service to keep your Ren
    * **Monitoring Interval**: `10 minutes` *(Must be strictly set below 15 minutes).*
 4. Scroll down and click **Create Monitor**.
 
-That's it! UptimeRobot keeps the server alive, and your phone's new background Worker keeps the session alive. Your integration is now rock solid.
+That's it! UptimeRobot keeps the server alive, and your phone's background handshake ensures the session is always fresh. Your integration is now rock solid.
 
 ---
 
