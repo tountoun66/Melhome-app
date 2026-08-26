@@ -18,10 +18,10 @@ object OAuthManager {
     const val CALLBACK_SCHEME = "melcloudhome"
 
     private const val AUTH_BASE = "https://auth.melcloudhome.com"
-    private const val PAR_URL = "$AUTH_BASE/connect/par"
     private const val AUTHORIZE_URL = "$AUTH_BASE/connect/authorize"
     private const val TOKEN_URL = "$AUTH_BASE/connect/token"
-    private const val CLIENT_ID = "monitorandcontrolhome"
+    // The official MELCloud Home mobile configuration identifies the native client as `mobile`.
+    private const val CLIENT_ID = "mobile"
     private const val SCOPE = "openid profile offline_access"
 
     private val client = OkHttpClient.Builder()
@@ -48,34 +48,20 @@ object OAuthManager {
         val state = UUID.randomUUID().toString()
         val verifier = randomUrlSafe()
         val challenge = codeChallenge(verifier)
+        TokenManager.savePendingOAuth(context, state, verifier)
 
-        val form = FormBody.Builder()
-            .add("client_id", CLIENT_ID)
-            .add("response_type", "code")
-            .add("redirect_uri", REDIRECT_URI)
-            .add("scope", SCOPE)
-            .add("state", state)
-            .add("code_challenge", challenge)
-            .add("code_challenge_method", "S256")
-            .add("nonce", state)
-            .build()
-
-        val request = Request.Builder()
-            .url(PAR_URL)
-            .post(form)
-            .addHeader("Accept", "application/json")
-            .build()
-
-        client.newCall(request).execute().use { response ->
-            val body = response.body?.string().orEmpty()
-            if (!response.isSuccessful) throw IllegalStateException("PAR OAuth HTTP ${response.code}: ${body.take(300)}")
-            val requestUri = JSONObject(body).optString("request_uri")
-            if (requestUri.isBlank()) throw IllegalStateException("PAR OAuth : request_uri absent")
-
-            TokenManager.savePendingOAuth(context, state, verifier)
-            val url = "$AUTHORIZE_URL?client_id=${Uri.encode(CLIENT_ID)}&request_uri=${Uri.encode(requestUri)}"
-            AuthorizationRequest(url, state, verifier)
+        val url = buildString {
+            append(AUTHORIZE_URL)
+            append("?client_id=").append(Uri.encode(CLIENT_ID))
+            append("&response_type=code")
+            append("&redirect_uri=").append(Uri.encode(REDIRECT_URI))
+            append("&scope=").append(Uri.encode(SCOPE))
+            append("&state=").append(Uri.encode(state))
+            append("&nonce=").append(Uri.encode(state))
+            append("&code_challenge=").append(Uri.encode(challenge))
+            append("&code_challenge_method=S256")
         }
+        AuthorizationRequest(url, state, verifier)
     }
 
     suspend fun exchangeAuthorizationCode(context: Context, code: String, state: String?): TokenResponse = withContext(Dispatchers.IO) {
@@ -98,7 +84,7 @@ object OAuthManager {
             val json = JSONObject(body)
             val access = json.optString("access_token")
             val refresh = json.optString("refresh_token")
-            if (access.isBlank() || refresh.isBlank()) throw IllegalStateException("Réponse OAuth incomplète")
+            if (access.isBlank() || refresh.isBlank()) throw IllegalStateException("Réponse OAuth sans access_token ou refresh_token")
             val expiresAt = System.currentTimeMillis() + json.optLong("expires_in", 3600L) * 1000L
             TokenManager.saveOAuthSession(context, access, refresh, expiresAt)
             TokenManager.clearPendingOAuth(context)
@@ -110,7 +96,6 @@ object OAuthManager {
         val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val serverUrl = (prefs.getString("render_server_url", "https://melhome-bridge.onrender.com") ?: "").trim().trimEnd('/')
         if (serverUrl.isBlank()) return@withContext false
-
         val expiresIn = ((tokens.expiresAt - System.currentTimeMillis()) / 1000L).coerceAtLeast(60L)
         val json = JSONObject().apply {
             put("access_token", tokens.accessToken)
@@ -118,12 +103,10 @@ object OAuthManager {
             put("expires_in", expiresIn)
             put("expires_at", tokens.expiresAt)
         }
-
         val request = Request.Builder()
             .url("$serverUrl/api/save-oauth")
             .post(okhttp3.RequestBody.create(okhttp3.MediaType.parse("application/json; charset=utf-8"), json.toString()))
             .build()
-
         client.newCall(request).execute().use { it.isSuccessful }
     }
 
