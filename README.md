@@ -1,3 +1,8 @@
+------abandoned project-----
+
+
+
+
 # 🏠 Melhome Bridge v1.11: Better MELCloud Home Integration for Google Home
 
 This project provides a custom Android app and a self-hosted Node.js bridge to connect your Mitsubishi Air Conditioners (using MELCloud Home) to Google Home, overcoming the limitations of the official integration.
